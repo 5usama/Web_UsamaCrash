@@ -1,19 +1,65 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>WhatsApp Attack Panel</title>
-    <style>
-        body { font-family: Arial; padding: 20px; }
-        input, button { padding: 10px; margin: 5px; }
-    </style>
+  <title>WhatsApp Bot Panel</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .panel { display: none; }
+    #qrCode { max-width: 300px; }
+  </style>
 </head>
 <body>
-    <h1>WhatsApp Attack Panel</h1>
-    <form action="/attack" method="POST">
-        <input type="text" name="target" placeholder="923××××××××" required>
-        <br>
-        <button type="submit" name="command" value="fuckvi">FuckVI</button>
-        <button type="submit" name="command" value="fuckinvi">FuckINVI</button>
+  <!-- Connection Panel -->
+  <div id="connectionPanel">
+    <h1>WhatsApp Connection</h1>
+    <div id="qrContainer">
+      <p>Scan QR Code:</p>
+      <img id="qrCode" src="">
+    </div>
+    <div id="pairingContainer" style="display:none;">
+      <p>Pairing Code: <span id="pairingCode"></span></p>
+    </div>
+    <p id="connectionStatus">Connecting...</p>
+  </div>
+
+  <!-- Attack Panel (Shows after connection) -->
+  <div id="attackPanel" class="panel">
+    <h1>Attack Panel</h1>
+    <form id="attackForm">
+      <input type="text" id="target" placeholder="923××××××××" required>
+      <button type="button" onclick="sendAttack('fuckvi')">FuckVI</button>
+      <button type="button" onclick="sendAttack('fuckinvi')">FuckINVI</button>
     </form>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    
+    // QR Code Handling
+    socket.on('qr', (qr) => {
+      document.getElementById('qrCode').src = qr;
+    });
+    
+    // Pairing Code Handling
+    socket.on('pairingCode', (code) => {
+      document.getElementById('qrContainer').style.display = 'none';
+      document.getElementById('pairingContainer').style.display = 'block';
+      document.getElementById('pairingCode').innerText = code;
+    });
+    
+    // Connection Status
+    socket.on('connected', () => {
+      document.getElementById('connectionStatus').innerText = "Connected!";
+      document.getElementById('connectionPanel').style.display = 'none';
+      document.getElementById('attackPanel').style.display = 'block';
+    });
+    
+    // Attack Function
+    function sendAttack(command) {
+      const target = document.getElementById('target').value;
+      socket.emit('attack', { target, command });
+    }
+  </script>
 </body>
 </html>
